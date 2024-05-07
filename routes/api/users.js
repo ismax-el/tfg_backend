@@ -33,7 +33,9 @@ router.post('/login', async (req, res) => {
 
     res.json({
         success: 'Login correcto',
-        token: createToken(user)
+        token: createToken(user),
+        userId: user.id,
+        userRol: user.rol
     });
 })
 

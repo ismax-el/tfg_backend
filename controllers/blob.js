@@ -2,67 +2,74 @@ const azureConnection = require('@azure/storage-blob');
 
 require('dotenv').config();
 
+const sharp = require('sharp')
+
 const blobService = azureConnection.BlobServiceClient.fromConnectionString(
     process.env.AZURE_STORAGE_CONNECTION_STRING
 )
 
 //Subir un file/imagen
-const uploadBlob = async (req, res)=> {
-    try{
-        const {container} = req.body;
-        const {originalname, buffer} = req.file;
+const uploadBlob = async (eventId, imageId, buffer, mimetype) => {
+    try {
+        const containerClientOriginals = blobService.getContainerClient(eventId + "-originals");
+        await containerClientOriginals.getBlockBlobClient(imageId).uploadData(buffer, {
+            blobHTTPHeaders: {
+                blobContentType: mimetype
+            }
+        });
+        
+        const containerClientPreviews = blobService.getContainerClient(eventId + "-previews");
+        const resizedImageBuffer = await sharp(buffer).resize(300).toBuffer();
+        await containerClientPreviews.getBlockBlobClient(imageId).uploadData(resizedImageBuffer, {
+            blobHTTPHeaders: {
+                blobContentType: mimetype
+            }
+        })
 
-        const containerClient = blobService.getContainerClient(container);
-
-        await containerClient.getBlockBlobClient(originalname).uploadData(buffer);
-
-        res.json({"message": "success"})
-    }catch(error){
-        res.status(500).json({"message": error.message});
+    } catch (error) {
+        console.log("Error: ", error.message);
     }
 }
 
-//Obtener un file/imagen
-const getBlob = async (req, res)=> {
-    try{
-        console.log("hola");
-        const {container, filename} = req.params;
+//Obtener un file/imagen preview
+const getBlobPreview = async (req, res) => {
+    try {
+        //console.log(req.params);
+        const { eventId, imageId } = req.params;
 
-        const containerClient = blobService.getContainerClient(container);
+        const containerClient = blobService.getContainerClient(eventId + "-previews");
+
+        const response = await containerClient.getBlockBlobClient(imageId).downloadToBuffer();
 
         res.header("Content-Type", "image/jpg");
 
-        const response = await containerClient.getBlockBlobClient(filename).downloadToBuffer();
+        res.send(response);
+    } catch (error) {
+        res.status(500).json({ "message": error.message });
+    }
+}
+
+//Obtener un file/imagen preview
+const getBlobOriginal = async (req, res) => {
+    try {
+        //console.log(req.params);
+        const { eventId, imageId } = req.params;
+
+        const containerClient = blobService.getContainerClient(eventId + "-originals");
+
+        const response = await containerClient.getBlockBlobClient(imageId).downloadToBuffer();
+
+        res.header("Content-Type", "image/jpg");
 
         res.send(response);
-    }catch(error){
-        res.status(500).json({"message": error.message});
+    } catch (error) {
+        res.status(500).json({ "message": error.message });
     }
 }
 
-//Obtener lista de files/images de un contenedor
-const getBlobList = async (req, res)=> {
-    try{
-        const {eventId} = req.params;
-
-        const containerClient = blobService.getContainerClient(eventId);
-
-        const images= [];
-
-        const list = containerClient.listBlobsFlat();
-
-        for await (const blob of list){
-            images.push(blob.name)
-        }
-
-        res.json(images);
-    }catch(error){
-        res.status(500).json({"message": error.message});
-    }
-}
 
 module.exports = {
-    getBlob: getBlob, 
-    uploadBlob: uploadBlob,
-    getBlobList: getBlobList
+    getBlobPreview: getBlobPreview,
+    getBlobOriginal: getBlobOriginal,
+    uploadBlob: uploadBlob
 };

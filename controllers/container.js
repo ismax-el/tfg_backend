@@ -6,12 +6,15 @@ const blobService = azureConnection.BlobServiceClient.fromConnectionString(
 )
 
 //Crear contenedor
-const createContainer = (req, res) => {
+const createContainer = (eventId) => {
     try{
-        const { container } = req.body;
-        blobService.createContainer(container)
-        res.json({"message": "success"})
+        blobService.createContainer(eventId + "-previews")
+        blobService.createContainer(eventId + "-originals")
     }catch(error){
-        res.status(500).json({"message": error.message});
+        console.log("Error: ", error.message)
     }
+}
+
+module.exports = {
+    createContainer: createContainer
 }
