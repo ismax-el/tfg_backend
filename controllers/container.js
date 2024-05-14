@@ -15,6 +15,16 @@ const createContainer = (eventId) => {
     }
 }
 
+const deleteContainer = (eventId) => {
+    try{
+        blobService.deleteContainer(eventId + "-previews");
+        blobService.deleteContainer(eventId + "-originals");
+    }catch(error){
+        console.log("Error: ", error.message)
+    }
+}
+
 module.exports = {
-    createContainer: createContainer
+    createContainer: createContainer,
+    deleteContainer: deleteContainer
 }

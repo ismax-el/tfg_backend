@@ -67,9 +67,22 @@ const getBlobOriginal = async (req, res) => {
     }
 }
 
+const deleteBlob = async (eventId, imageId) => {
+    try {
+        const containerClientOriginals = blobService.getContainerClient(eventId + "-originals");
+        const containerClientPreviews = blobService.getContainerClient(eventId + "-previews");
+        
+        await containerClientOriginals.getBlockBlobClient(imageId).deleteIfExists();
+        await containerClientPreviews.getBlockBlobClient(imageId).deleteIfExists();
+    } catch (error) {
+        console.log("Error: ", error.message);
+    }
+}
+
 
 module.exports = {
     getBlobPreview: getBlobPreview,
     getBlobOriginal: getBlobOriginal,
-    uploadBlob: uploadBlob
+    uploadBlob: uploadBlob,
+    deleteBlob: deleteBlob
 };
