@@ -56,7 +56,7 @@ const checkEventStatus = async (req, res, next) => {
 
         console.log(actualDateEuropeMadrid, eventDateEuropeMadrid)
 
-        if(actualDateEuropeMadrid > eventDateEuropeMadrid){
+        if(actualDateEuropeMadrid < eventDateEuropeMadrid){
             throw error;
         }
 
