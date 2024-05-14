@@ -54,9 +54,12 @@ const checkEventStatus = async (req, res, next) => {
         const actualDateEuropeMadrid = new Date(actualDate.toLocaleString('en-US', { timeZone: 'Europe/Madrid' }));
         const eventDateEuropeMadrid = new Date(eventDate.toLocaleString('en-US', { timeZone: 'Europe/Madrid' }));
 
+        actualDateEuropeMadrid.setHours(0,0,0,0)
+        eventDateEuropeMadrid.setHours(0,0,0,0)
+
         console.log(actualDateEuropeMadrid, eventDateEuropeMadrid)
 
-        if(actualDateEuropeMadrid < eventDateEuropeMadrid){
+        if(actualDateEuropeMadrid > eventDateEuropeMadrid){
             throw error;
         }
 
