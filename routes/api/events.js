@@ -115,27 +115,27 @@ router.post('/:eventId/images/:imageId/like', checkToken, checkEventStatus, asyn
         let payload;
         payload = jwt.verify(token, process.env.JWT_SECRET_KEY);
         if (payload.user_id != userId) {
-            res.json({ error: "Algo ha salido mal." });
+            return res.json({ error: "Algo ha salido mal." });
         }
 
         //VERIFICAR SI LA IMAGEN A LA QUE LE INTENTA DAR LIKE ES SUYA
         const image = await Image.findOne({ _id: imageId, event_id: eventId })
         if (image.user_id == userId) {
-            res.json({ error: "No puedes votarte a ti mismo." })
+            return res.json({ error: "No puedes votarte a ti mismo." })
         }
 
         //Verificar si la imagen a la que le está dando like ya le ha dado
         const isLiked = await Like.find({ user_id: userId, event_id: eventId, image_id: imageId })
 
         if (isLiked.length > 0) {
-            res.json({ alreadyLiked: "Ya le has dado like a esta imagen" })
+            return res.json({ alreadyLiked: "Ya le has dado like a esta imagen" })
         } else {
 
             //Verificar si se ha dado like en este evento a otra imagen
             const userLikesInEvent = await Like.find({ user_id: userId, event_id: eventId })
 
             if (userLikesInEvent.length > 0) {
-                res.json({ error: '¡Oh no! Parece que ya votaste en este evento.' });
+                return res.json({ error: '¡Oh no! Parece que ya votaste en este evento.' });
             } else {
                 const like = await Like.create({
                     user_id: userId,
@@ -165,7 +165,7 @@ router.post("/:eventId/images/:imageId/dislike", checkToken, checkEventStatus, a
         let payload;
         payload = jwt.verify(token, process.env.JWT_SECRET_KEY);
         if (payload.user_id != userId) {
-            res.json({ error: "Algo ha salido mal." });
+            return res.json({ error: "Algo ha salido mal." });
         }
 
         await Like.deleteOne({ user_id: userId, event_id: eventId, image_id: imageId })
@@ -207,7 +207,7 @@ router.delete("/:eventId/images/:imageId/delete", checkToken, async (req, res) =
         //Primero miramos si existe el usuario
         const user = await User.findById({ _id: userId });
         if (!user) {
-            res.json({ error: 'Usuario no encontrado.' });
+            return res.json({ error: 'Usuario no encontrado.' });
         }
 
         //En caso de ser administrador borrar la imagen directamente
@@ -218,7 +218,7 @@ router.delete("/:eventId/images/:imageId/delete", checkToken, async (req, res) =
             //En caso de ser un usuario normal, comprobar antes que esa imagen sea suya
             const image = await Image.findById({ _id: imageId });
             if (image.user_id != userId) {
-                res.json({ error: 'No puedes borrar una foto que no es tuya.' });
+                return res.json({ error: 'No puedes borrar una foto que no es tuya.' });
             }
 
             await Image.findOneAndDelete({ _id: imageId, user_id: userId })
