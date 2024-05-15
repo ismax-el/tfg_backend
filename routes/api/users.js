@@ -73,7 +73,8 @@ router.post('/validate', async (req, res) => {
     }
 
     try {
-        const payload = jwt.verify(token, 'clave secreta');
+        //pasar el clave secreta al .env
+        const payload = jwt.verify(token, process.env.JWT_SECRET_KEY);
         res.json({ isValid: true });
     } catch (error) {
         res.json({ isValid: false });
@@ -86,7 +87,7 @@ function createToken(user) {
         user_id: user._id,
         user_rol: user.rol
     }
-    return jwt.sign(payload, 'clave secreta')
+    return jwt.sign(payload, process.env.JWT_SECRET_KEY)
 }
 
 

@@ -7,6 +7,7 @@ const Like = require('../../models/like.model')
 const User = require('../../models/user.model')
 const multer = require('multer');
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 const { checkToken, checkRol, checkEventStatus } = require('../../utils/middlewares')
 
 const upload = multer();
@@ -68,12 +69,12 @@ router.post('/create', checkRol, async (req, res) => {
 
 //Modificar un evento
 router.put('/:eventId/editEvent', checkRol, async (req, res) => {
-    try{
-        const {eventId} = req.params;
-        const response = await Event.findByIdAndUpdate(eventId, req.body, {new: true}); 
+    try {
+        const { eventId } = req.params;
+        const response = await Event.findByIdAndUpdate(eventId, req.body, { new: true });
         res.json(response);
-    }catch(error){
-        res.json({error: error.message})
+    } catch (error) {
+        res.json({ error: error.message })
     }
 })
 
@@ -100,7 +101,7 @@ router.post('/:eventId/images/upload', checkToken, checkEventStatus, upload.sing
 })
 
 //Dar like
-router.post('/:eventId/images/:imageId/like', checkToken, async (req, res) => {
+router.post('/:eventId/images/:imageId/like', checkToken, checkEventStatus, async (req, res) => {
     try {
         const { userId } = req.body;
         const { imageId, eventId } = req.params;
@@ -109,7 +110,15 @@ router.post('/:eventId/images/:imageId/like', checkToken, async (req, res) => {
         console.log(imageId)
         console.log(eventId)
 
-        //FALTA VERIFICAR SI LA IMAGEN A LA QUE LE INTENTA DAR LIKE ES SUYA
+        //VERIFICAR QUE EL USER DEL TOKEN SEA EL MISMO QUE EL DEL TOKEN Y SI EXISTE
+        const token = req.headers['authorization'];
+        let payload;
+        payload = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        if (payload.user_id != userId) {
+            res.json({ error: "Algo ha salido mal." });
+        }
+
+        //VERIFICAR SI LA IMAGEN A LA QUE LE INTENTA DAR LIKE ES SUYA
         const image = await Image.findOne({ _id: imageId, event_id: eventId })
         if (image.user_id == userId) {
             res.json({ error: "No puedes votarte a ti mismo." })
@@ -145,11 +154,19 @@ router.post('/:eventId/images/:imageId/like', checkToken, async (req, res) => {
 })
 
 //Dislike image
-router.post("/:eventId/images/:imageId/dislike", checkToken, async (req, res) => {
+router.post("/:eventId/images/:imageId/dislike", checkToken, checkEventStatus, async (req, res) => {
     try {
 
         const { userId } = req.body;
         const { imageId, eventId } = req.params;
+
+        //VERIFICAR QUE EL USER DEL TOKEN SEA EL MISMO QUE EL DEL BODY Y SI EXISTE
+        const token = req.headers['authorization'];
+        let payload;
+        payload = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        if (payload.user_id != userId) {
+            res.json({ error: "Algo ha salido mal." });
+        }
 
         await Like.deleteOne({ user_id: userId, event_id: eventId, image_id: imageId })
         await Image.updateOne({ _id: imageId }, { $inc: { likes: -1 } })

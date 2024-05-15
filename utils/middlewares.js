@@ -13,7 +13,7 @@ const checkToken = (req, res, next) => {
 
     let payload;
     try {
-        payload = jwt.verify(token, 'clave secreta')
+        payload = jwt.verify(token, process.env.JWT_SECRET_KEY)
     } catch (error) {
         return res.json({ error: 'El token no es correcto.' })
     }
@@ -31,7 +31,7 @@ const checkRol = (req, res, next) => {
 
     let payload;
     try {
-        payload = jwt.verify(token, 'clave secreta')
+        payload = jwt.verify(token, process.env.JWT_SECRET_KEY)
         if (payload.user_rol != 'administrator') {
             throw error;
         }
