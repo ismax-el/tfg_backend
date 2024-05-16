@@ -64,7 +64,7 @@ const checkEventStatus = async (req, res, next) => {
         }
 
     }catch(error){
-        return res.json({ error: 'No puedes subir más imágenes, ya ha finalizado el evento.' })
+        return res.json({ error: 'No puedes interactuar más, ya ha finalizado el evento.' })
     }
 
     next();

@@ -199,7 +199,7 @@ router.delete("/:eventId/images/:imageId/delete", checkToken, async (req, res) =
     try {
         const token = req.headers['authorization']
         let payload;
-        payload = jwt.verify(token, 'clave secreta')
+        payload = jwt.verify(token, process.env.JWT_SECRET_KEY)
 
         const userId = payload.user_id;
         const { eventId, imageId } = req.params;
