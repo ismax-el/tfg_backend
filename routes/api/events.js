@@ -195,7 +195,7 @@ router.post("/:eventId/getLike", checkToken, async (req, res) => {
 })
 
 //DELETE eliminar imagen tanto usuarios como administradores
-router.delete("/:eventId/images/:imageId/delete", checkToken, async (req, res) => {
+router.delete("/:eventId/images/:imageId/delete", checkToken, checkEventStatus, async (req, res) => {
     try {
         const token = req.headers['authorization']
         let payload;
