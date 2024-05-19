@@ -19,7 +19,7 @@ const uploadBlob = async (eventId, imageId, buffer, mimetype) => {
         });
         
         const containerClientPreviews = blobService.getContainerClient(eventId + "-previews");
-        const resizedImageBuffer = await sharp(buffer).resize(300).toBuffer();
+        const resizedImageBuffer = await sharp(buffer).rotate().resize(300).toBuffer();
         await containerClientPreviews.getBlockBlobClient(imageId).uploadData(resizedImageBuffer, {
             blobHTTPHeaders: {
                 blobContentType: mimetype
