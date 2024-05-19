@@ -15,7 +15,7 @@ router.get('/getUserInfo/:userId', async (req, res) => {
 
         const user = await User.findById(userId)
         if (!user) {
-            res.json({ error: "No se ha encontrado el usuario." })
+            return res.json({ error: "No se ha encontrado el usuario." })
         }
 
         res.json(user);
@@ -44,35 +44,38 @@ router.post('/register', checkCaptcha, async (req, res) => {
 
 //POST /api/users/login
 router.post('/login', checkCaptcha, async (req, res) => {
-    //Comprobar si el mail existe
-    const user = await User.findOne({ email: req.body.email });
-
-    if (!user) {
-        return res.json({ error: 'Error en email/contraseña' });
+    try{
+        //Comprobar si el mail existe
+        const user = await User.findOne({ email: req.body.email });
+    
+        if (!user) {
+            return res.json({ error: 'Error en email/contraseña' });
+        }
+    
+        const eq = bcrypt.compareSync(req.body.password, user.password);
+    
+        if (!eq) {
+            return res.json({ error: 'Error en email/contraseña' });
+        }
+    
+        res.json({
+            success: 'Login correcto',
+            token: createToken(user),
+            userId: user.id,
+            userRol: user.rol
+        });
+    }catch(error){
+        res.json({ error: error.message })
     }
-
-    const eq = bcrypt.compareSync(req.body.password, user.password);
-
-    if (!eq) {
-        return res.json({ error: 'Error en email/contraseña' });
-    }
-
-    res.json({
-        success: 'Login correcto',
-        token: createToken(user),
-        userId: user.id,
-        userRol: user.rol
-    });
 })
 
 router.post('/validate', async (req, res) => {
-    const token = req.headers['authorization'];
-
-    if (!token) {
-        return res.json({ error: 'Debes incluir la cabecera con el token' })
-    }
-
     try {
+        const token = req.headers['authorization'];
+    
+        if (!token) {
+            return res.json({ error: 'Debes incluir la cabecera con el token' })
+        }
         //pasar el clave secreta al .env
         const payload = jwt.verify(token, process.env.JWT_SECRET_KEY);
         res.json({ isValid: true });
