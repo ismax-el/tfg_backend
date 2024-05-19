@@ -96,7 +96,7 @@ router.post('/:eventId/images/upload', checkToken, checkEventStatus, upload.sing
 
         res.json(image);
     } catch (error) {
-        res.status(500).json({ error: error.message })
+        res.json({ error: error.message })
     }
 })
 
@@ -149,7 +149,7 @@ router.post('/:eventId/images/:imageId/like', checkToken, checkEventStatus, asyn
             }
         }
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        res.json({ message: error.message })
     }
 })
 
@@ -173,7 +173,7 @@ router.post("/:eventId/images/:imageId/dislike", checkToken, checkEventStatus, a
 
         res.json({ success: "Ya no te gusta la imagen" })
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        res.json({ message: error.message })
     }
 
 
@@ -230,7 +230,7 @@ router.delete("/:eventId/images/:imageId/delete", checkToken, checkEventStatus, 
         res.json({ success: "¡Imagen borrada con éxito!" })
 
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        res.json({ message: error.message })
     }
 })
 
@@ -246,7 +246,7 @@ router.delete('/:eventId/delete', checkRol, async (req, res) => {
 
         res.json({ success: "¡Evento borrado con éxito!" })
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        res.json({ message: error.message })
     }
 })
 

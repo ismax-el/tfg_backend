@@ -87,7 +87,7 @@ const checkCaptcha = async (req, res, next) => {
         console.log("Captcha válido.")
         next();
     }else{
-        res.status(400).json({ success: false, message: 'Token reCAPTCHA inválido' });
+        res.json({ success: false, message: 'Token reCAPTCHA inválido' });
     }
 }
 

@@ -27,7 +27,7 @@ const uploadBlob = async (eventId, imageId, buffer, mimetype) => {
         })
 
     } catch (error) {
-        console.log("Error: ", error.message);
+        res.json({ "message": error.message });
     }
 }
 
@@ -38,14 +38,20 @@ const getBlobPreview = async (req, res) => {
         const { eventId, imageId } = req.params;
 
         const containerClient = blobService.getContainerClient(eventId + "-previews");
+        const blobClient = containerClient.getBlockBlobClient(imageId);
 
-        const response = await containerClient.getBlockBlobClient(imageId).downloadToBuffer();
+        // Obtener las propiedades del blob, incluyendo el mimetype
+        const properties = await blobClient.getProperties();
+        const contentType = properties.contentType;
 
-        res.header("Content-Type", "image/jpg");
+        // Descargar el contenido del blob a un buffer
+        const response = await blobClient.downloadToBuffer();
 
+        // Configurar el header 'Content-Type' usando el mimetype del blob
+        res.header("Content-Type", contentType);
         res.send(response);
     } catch (error) {
-        res.status(500).json({ "message": error.message });
+        res.json({ "message": error.message });
     }
 }
 
@@ -56,14 +62,20 @@ const getBlobOriginal = async (req, res) => {
         const { eventId, imageId } = req.params;
 
         const containerClient = blobService.getContainerClient(eventId + "-originals");
+        const blobClient = containerClient.getBlockBlobClient(imageId);
 
-        const response = await containerClient.getBlockBlobClient(imageId).downloadToBuffer();
+        // Obtener las propiedades del blob, incluyendo el mimetype
+        const properties = await blobClient.getProperties();
+        const contentType = properties.contentType;
 
-        res.header("Content-Type", "image/jpg");
+        // Descargar el contenido del blob a un buffer
+        const response = await blobClient.downloadToBuffer();
 
+        // Configurar el header 'Content-Type' usando el mimetype del blob
+        res.header("Content-Type", contentType);
         res.send(response);
     } catch (error) {
-        res.status(500).json({ "message": error.message });
+        res.json({ "message": error.message });
     }
 }
 
@@ -75,7 +87,7 @@ const deleteBlob = async (eventId, imageId) => {
         await containerClientOriginals.getBlockBlobClient(imageId).deleteIfExists();
         await containerClientPreviews.getBlockBlobClient(imageId).deleteIfExists();
     } catch (error) {
-        console.log("Error: ", error.message);
+        res.json({ "message": error.message });
     }
 }
 
