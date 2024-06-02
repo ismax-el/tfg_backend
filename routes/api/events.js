@@ -187,10 +187,14 @@ router.post("/:eventId/getLike", checkToken, async (req, res) => {
 
         const like = await Like.findOne({ user_id: userId, event_id: eventId })
 
+        if (!like) {
+            return res.json({ error: 'No existe ningún like en este evento asociado a este usuario.' });
+        }
+
         res.json({ imageId: like.image_id });
 
     } catch (error) {
-
+        res.json({ message: error.message });
     }
 })
 
